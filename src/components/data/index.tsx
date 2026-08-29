@@ -2,15 +2,19 @@
 // 数据视图容器 - 表格 / 看板切换 + 导入导出工具栏
 // ============================================
 // P1-7 TableView（表格 CRUD + 虚拟滚动）
-// P1-8 KanbanView（看板 + dnd 拖拽 + 状态机）
+// P1-8 KanbanView（看板 + dnd 拖拽 + 状态机）— 懒加载（dnd-kit 独立 chunk）
 // P1-10 ExportImport（导入导出工具栏）
 // 三者组合为完整数据视图；无选中应用时显示引导。
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { useAppStore } from '../../stores/appStore';
 import { DataView as TableView } from './TableView';
-import { KanbanView } from './KanbanView';
 import ExportImport from './ExportImport';
+
+// 懒加载看板（含 dnd-kit，仅切到看板时加载）
+const KanbanView = lazy(() =>
+  import('./KanbanView').then(m => ({ default: m.KanbanView }))
+);
 
 type ViewMode = 'table' | 'kanban';
 
@@ -61,7 +65,13 @@ export function DataView() {
       </div>
 
       {/* 视图主体 */}
-      {mode === 'table' ? <TableView /> : <KanbanView />}
+      {mode === 'table' ? (
+        <TableView />
+      ) : (
+        <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', color: '#9ca3af' }}>看板加载中...</div>}>
+          <KanbanView />
+        </Suspense>
+      )}
     </div>
   );
 }
