@@ -22,6 +22,13 @@ export async function initStorage(): Promise<void> {
     locateFile: () => wasmUrl,
   });
 
+  // 兜底：页面卸载前立即落盘，防止 debounce 窗口内的最后写入丢失
+  if (typeof window !== 'undefined') {
+    const flushOnExit = () => flushSave();
+    window.addEventListener('beforeunload', flushOnExit);
+    window.addEventListener('pagehide', flushOnExit);
+  }
+
   // 尝试加载本地存储
   const saved = localStorage.getItem('opennocode_db');
   if (saved) {
