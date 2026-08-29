@@ -166,7 +166,7 @@ export interface CustomButton {
 }
 
 // 数据记录
-export interface Record {
+export interface AppRecord {
   id: string;
   app_id: string;
   data: Record<string, unknown>;
@@ -193,7 +193,7 @@ export interface ValidationError {
 // 应用视图 Props
 export interface AppViewProps {
   app: App;
-  records: Record[];
+  records: AppRecord[];
   onCreate: (data: Record<string, unknown>) => void;
   onUpdate: (id: string, data: Record<string, unknown>) => void;
   onDelete: (id: string) => void;

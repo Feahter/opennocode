@@ -1,16 +1,21 @@
+// 组件统一出口
+// P0-3: 占位视图（P1 各任务在 components/{apps,fields,data}/ 建真实实现后，替换导入路径）
+
+import type { ReactNode } from 'react';
+
 export function AppsView() {
-  return <div>Apps View - To be implemented</div>;
+  return <div>应用管理（待 P1 实现）</div>;
 }
 
 export function FieldsView() {
-  return <div>Fields View - To be implemented</div>;
+  return <div>字段管理（待 P1 实现）</div>;
 }
 
 export function DataView() {
-  return <div>Data View - To be implemented</div>;
+  return <div>数据视图（待 P1 实现）</div>;
 }
 
-export default function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+export function Modal({ children, onClose }: { children: ReactNode; onClose: () => void }) {
   return (
     <div style={{
       position: 'fixed',

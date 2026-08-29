@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import * as storage from '../core/storage';
-import type { App, Field, Record, FieldType } from '../types';
+import type { App, Field, AppRecord, FieldType } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 interface AppState {
   apps: App[];
   fields: Field[];
   selectedApp: App | null;
-  records: Record[];
+  records: AppRecord[];
   view: 'apps' | 'fields' | 'data';
   showModal: 'app' | 'field' | null;
   isLoading: boolean;
@@ -78,7 +78,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   createRecord: (data: Record<string, unknown>) => {
     const { selectedApp } = get();
     if (!selectedApp) return;
-    const record: Record = {
+    const record: AppRecord = {
       id: uuidv4(),
       app_id: selectedApp.id,
       data,
@@ -101,8 +101,35 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
   },
 
+  updateApp: (id: string, updates: Partial<App>) => {
+    storage.updateApp(id, updates);
+    set(state => ({
+      apps: state.apps.map(a => a.id === id ? { ...a, ...updates, updated_at: Date.now() } : a),
+      selectedApp: state.selectedApp?.id === id ? { ...state.selectedApp, ...updates, updated_at: Date.now() } : state.selectedApp,
+    }));
+  },
+
   deleteField: (id: string) => {
     storage.deleteField(id);
     set(state => ({ fields: state.fields.filter(f => f.id !== id) }));
+  },
+
+  updateField: (id: string, updates: Partial<Field>) => {
+    storage.updateField(id, updates);
+    set(state => ({
+      fields: state.fields.map(f => f.id === id ? { ...f, ...updates, updated_at: Date.now() } : f),
+    }));
+  },
+
+  updateRecord: (id: string, updates: Partial<AppRecord>) => {
+    storage.updateRecord(id, updates);
+    set(state => ({
+      records: state.records.map(r => r.id === id ? { ...r, ...updates, updated_at: Date.now() } : r),
+    }));
+  },
+
+  deleteRecord: (id: string) => {
+    storage.deleteRecord(id);
+    set(state => ({ records: state.records.filter(r => r.id !== id) }));
   },
 }));

@@ -1,25 +1,23 @@
 import { useEffect } from 'react';
 import { useAppStore } from './stores/appStore';
-
-
-
-const AppsView = () => <div>应用管理</div>; const FieldsView = () => <div>字段管理</div>; const DataView = () => <div>数据视图</div>; import Modal from './components/index';
+import { AppsView, FieldsView, DataView, Modal } from './components/index';
 
 export function App() {
-  const { 
-    view, 
-    showModal, 
+  const {
+    view,
+    showModal,
     isLoading,
-    init, 
-    setView, 
+    init,
+    setView,
     setShowModal,
     createApp,
-    createField 
+    createField,
   } = useAppStore();
 
+  // 唯一初始化入口（main.tsx 只渲染，不重复 init）
   useEffect(() => {
     init();
-  }, []);
+  }, [init]);
 
   if (isLoading) {
     return <div style={{ padding: 20 }}>Loading...</div>;
@@ -30,7 +28,7 @@ export function App() {
       {/* 侧边栏 */}
       <div className="sidebar">
         <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>OpenNoCode</h1>
-        
+
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <button
             onClick={() => setView('apps')}
@@ -90,8 +88,8 @@ export function App() {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               createField(
-                formData.get('name') as string, 
-                formData.get('type') as any, 
+                formData.get('name') as string,
+                formData.get('type') as any,
                 formData.get('label') as string
               );
             }}>
