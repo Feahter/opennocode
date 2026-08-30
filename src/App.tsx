@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAppStore } from './stores/appStore';
 import { AppsView, FieldsView, DataView, Modal } from './components/index';
+import { UIDemo } from './components/UIDemo';
 
 export function App() {
   const {
@@ -58,6 +59,20 @@ export function App() {
           >
             字段管理
           </button>
+          <button
+            onClick={() => setView('uidemo')}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              background: view === 'uidemo' ? '#dbeafe' : 'transparent',
+              color: view === 'uidemo' ? '#1d4ed8' : '#374151',
+              textAlign: 'left',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            元设计演示
+          </button>
         </nav>
       </div>
 
@@ -66,6 +81,7 @@ export function App() {
         {view === 'apps' && <AppsView />}
         {view === 'fields' && <FieldsView />}
         {view === 'data' && <DataView />}
+        {view === 'uidemo' && <UIDemo />}
       </div>
 
       {/* 模态框 */}

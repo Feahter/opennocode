@@ -8,7 +8,7 @@ interface AppState {
   fields: Field[];
   selectedApp: App | null;
   records: AppRecord[];
-  view: 'apps' | 'fields' | 'data';
+  view: 'apps' | 'fields' | 'data' | 'uidemo';
   showModal: 'app' | 'field' | null;
   isLoading: boolean;
   
@@ -18,7 +18,7 @@ interface AppState {
   createField: (name: string, type: FieldType, label: string) => void;
   selectApp: (app: App) => void;
   createRecord: (data: Record<string, unknown>) => void;
-  setView: (view: 'apps' | 'fields' | 'data') => void;
+  setView: (view: 'apps' | 'fields' | 'data' | 'uidemo') => void;
   setShowModal: (modal: 'app' | 'field' | null) => void;
   deleteApp: (id: string) => void;
   deleteField: (id: string) => void;
