@@ -398,3 +398,58 @@ dispatchAction(action: Action, ctx: ActionContext): void
 7. ~~可视化拖拽设计器~~ —— **明确不做**，agent 就是设计器。
 
 **一句话收束**：这套方案不是「再抽象一层」，而是**把已经散落在 FieldMeta / View.config / CustomButton / core/* 里的元数据语义，收拢成一颗节点树，用 250 行纯函数引擎解释它**。做完后，agent 的产出从「帮你写 React 组件」变成「帮你生成一份经过 zod 校验、可直接渲染、可导出迁移的 UI 配置」——这才是无代码 + agent 友好的终局。
+
+---
+
+## 分层实施（防过度设计）
+
+| 层 | 内容 | 工作量 | 优先级 |
+|---|---|---|---|
+| L0 引擎+注册表 | 渲染引擎 + kind 注册表 | ~250 行 | **必须**（地基） |
+| L1 布局容器 | container.* | ~300 行 | **必须**（与 L0 同做） |
+| L2 字段控件+表单 | field.* + 表单引擎 | ~400 行 | **必须**（消灭重复表单） |
+| L4 视图接入 | 存量组件收编为重型 kind | — | **必须** |
+| L3 绑定+动作 | bindings + Action 分发 | ~250 行 | 强烈建议 |
+| L5 自举编辑器 | 编辑器自身用引擎渲染 | — | 可选 |
+| ~~拖拽设计器~~ | — | — | **明确不做**（agent 即设计器） |
+
+> 2026-08-30 实测：L0+L1+L2+L3 基础约 800 行，Playwright 冒烟 8/8 通过。
+
+## 兼容路径（防「推倒重来」）
+
+1. 视图配置（`View.config`）升级为可选 UINode，旧空配置走默认渲染 → 存量零破坏
+2. 现有重型组件（表格/看板）整体注册为 `view.table`/`view.kanban` kind，内部实现不动
+3. 手写回调（onCreate/onUpdate…）变成默认 Action 集注入 ctx，行为一致
+
+## 实测陷阱
+
+| 坑 | 解法 |
+|---|---|
+| 联动显隐 | `__hidden: true` 配置级隐藏通道，渲染引擎第一行检查 |
+| 字段控件无 name | 所有输入控件必须渲染 `name={props.name}`，否则表单提交/自动化定位失败 |
+| 条件表达式只支持单比较 | `evalCondition` 先拆 OR 再拆 AND，逐简单式求值 |
+| `{p.title && ...}` 报 TS2322 | unknown 值不能 truthy 渲染 → 显式 `!== undefined && !== null` |
+| unknown 塞 style gap/minWidth | 写 `gap(v, def)` / typeof 判断 helper，别直接塞 |
+| NodeProps children 是 ReactNode[] | 渲染单元素时单独解构/断言，别混用 |
+| 持久化 debounce 丢写 | `beforeunload`/`pagehide` 兜底 flushSave（冒烟刷新测试才抓到） |
+
+## 验证清单（Playwright 冒烟必测）
+
+- [ ] 导航进入配置渲染页
+- [ ] 字段数量 = 配置节点数（标签核对）
+- [ ] 联动：切依赖字段值 → 显隐/选项变化
+- [ ] 校验：空必填报错 → 填齐通过
+- [ ] 配置 JSON 可序列化展示（agent 产出物可视化）
+- [ ] pageerror + console.error 监听为零
+
+## 工作流偏好（架构类任务）
+
+1. **想透再动手**：复杂架构先深度设计，不急着写代码
+2. **双轨设计**：主 agent 独立思考 + 军师独立设计 → 交叉收敛 → 定稿；分歧处标出收敛
+3. **军师必须读实际代码**：delegate goal 里要求读 types/store/components 再输出，否则方案是空谈
+4. **落地先做可验证 demo**：配置 JSON → 渲染出带联动+校验的表单页，冒烟验收后再推全量
+5. 评估存量代码时**量化痛点**（如「FieldEditor 971 行 + TableView 657 行 = 全项目 40% 手写 switch」），让收益可见
+
+---
+
+*本节的「实测陷阱 / 验证清单 / 分层实施 / 工作流偏好」于 2026-10-01 从同主题 skill `ui-meta-design` 回灌合并；该 skill 随后归档（内容已全部在此文档）。*
